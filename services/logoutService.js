@@ -15,7 +15,7 @@ async function logoutUser(userId, token) {
         const decoded = jwt.verify(token, JWT_SECRET);
 
         // Comprobar si el userId del token coincide con el userId proporcionado
-        if (decoded.id !== userId) { // Asegúrate de que el campo 'id' es el correcto
+        if (decoded.id !== userId) {
             throw new Error('User ID does not match the token');
         }
 
@@ -23,17 +23,12 @@ async function logoutUser(userId, token) {
         return new Promise((resolve, reject) => {
             client.del(userId, (err, response) => {
                 if (err) {
-                    reject(new Error('Error deleting token from Redis'));
+                    logger.error('Error deleting token from Redis');
+                    return reject(new Error('Error deleting token from Redis'));
                 }
-                if (response === 1) {
-                    const message = 'Token deleted successfully';
-                    logger.info(message);
-                    resolve(message);
-                } else {
-                    const message = 'Token not found in Redis';
-                    logger.info(message);
-                    resolve(message);
-                }
+                const message = response === 1 ? 'Token deleted successfully' : 'Token not found in Redis';
+                logger.info(message);
+                resolve(message);
             });
         });
     } catch (error) {
